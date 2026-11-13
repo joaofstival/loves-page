@@ -1,0 +1,199 @@
+/* ==========================================================================
+   story.css — capítulos da nossa história
+   PERSONALIZAR: --word-stagger (ritmo das palavras), --chapter-min (altura
+   dos capítulos), brilho dos cards em .chapter__media::before.
+   ========================================================================== */
+
+.story {
+  --word-stagger: 38ms;
+  --chapter-min: 78svh;
+  position: relative;
+}
+
+.story__chapters {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------------- Capítulo ---------------- */
+.chapter {
+  position: relative;
+  min-height: 78vh;
+  min-height: var(--chapter-min);
+  display: grid;
+  align-content: center;
+  gap: clamp(28px, 6vw, 56px);
+  padding: clamp(48px, 10vh, 96px) 0;
+}
+
+.chapter--solo {
+  justify-items: center;
+  text-align: center;
+}
+.chapter--solo .chapter__text { max-width: min(100%, 860px); } /* px (não ch): o wrapper usa a fonte do body, não a do título */
+
+.chapter__kicker {
+  margin: 0 0 18px;
+  font-family: var(--f-body);
+  font-size: var(--fs-small, 0.78rem);
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-variant: small-caps;
+  color: var(--c-red);
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition:
+    opacity var(--dur, 0.8s) var(--ease-out, ease-out),
+    transform var(--dur, 0.8s) var(--ease-out, ease-out);
+}
+
+.chapter__body {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: var(--fs-story, clamp(1.8rem, 5vw, 3.4rem));
+  font-weight: 400;
+  line-height: 1.18;
+  color: var(--c-ink);
+  text-wrap: pretty;
+}
+
+/* Palavras: escondidas até o capítulo entrar (.is-in). */
+.chapter__body .w {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translate3d(0, 0.45em, 0);
+  transition:
+    opacity 0.9s var(--ease-out, ease-out),
+    filter 0.9s var(--ease-out, ease-out),
+    transform 0.9s var(--ease-out, ease-out);
+  transition-delay: calc(180ms + var(--wi, 0) * var(--word-stagger));
+}
+
+.chapter.is-in .chapter__kicker {
+  opacity: 1;
+  transform: none;
+}
+.chapter.is-in .chapter__body .w {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+
+/* ---------------- Mídia ---------------- */
+.chapter__media {
+  position: relative;
+  margin: 0;
+  width: min(100%, 460px);
+  justify-self: center;
+}
+
+/* Brilho rosa atrás do card (estático: sem custo por frame). */
+.chapter__media::before {
+  content: "";
+  position: absolute;
+  inset: 8% 6%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 192, 203, 0.85), rgba(247, 168, 184, 0.35) 60%, transparent);
+  filter: blur(36px);
+  transform: scale(1.15);
+  pointer-events: none;
+}
+
+.chapter__media-inner {
+  border-radius: var(--radius-lg, 28px);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft, 0 20px 60px rgba(220, 20, 60, 0.12));
+  background: var(--c-bg-2, #fff1f2);
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.chapter__asset {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+/* ---------------- Desktop: duas colunas alternadas ---------------- */
+@media (min-width: 900px) {
+  .story { --chapter-min: 100svh; }
+  .chapter { min-height: 100vh; min-height: var(--chapter-min); }
+
+  .chapter--media {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    gap: clamp(48px, 7vw, 120px);
+  }
+  .chapter--media .chapter__media { justify-self: end; }
+
+  .chapter--reverse { grid-template-columns: 0.9fr 1.1fr; }
+  .chapter--reverse .chapter__text { order: 2; }
+  .chapter--reverse .chapter__media { order: 1; justify-self: start; }
+}
+
+/* ---------------- Rastro do cursor (desktop) ---------------- */
+.story-trail {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-floating, 50);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-out, ease-out);
+  contain: strict;
+}
+.story-trail.is-active { opacity: 1; }
+
+.story-trail__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 192, 203, 0.95) 0%, rgba(247, 168, 184, 0.5) 45%, rgba(255, 192, 203, 0) 72%);
+  opacity: var(--o, 1);
+  will-change: transform;
+}
+
+/* Cabeça do rastro: mini coração vermelho com halo. */
+.story-trail__dot--heart {
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 0;
+  background: none;
+}
+.story-trail__dot--heart::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 192, 203, 0.7), rgba(255, 192, 203, 0) 70%);
+}
+.story-trail__dot--heart::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--c-red);
+  /* Forma de coração via clip-path (sem imagens). */
+  clip-path: path("M5 9.2 C2.2 7.2 0 5.4 0 3.1 C0 1.4 1.3 0 2.9 0 C3.8 0 4.6 .5 5 1.2 C5.4 .5 6.2 0 7.1 0 C8.7 0 10 1.4 10 3.1 C10 5.4 7.8 7.2 5 9.2 Z");
+}
+
+/* ---------------- Movimento reduzido ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  .chapter__kicker,
+  .chapter__body .w {
+    filter: none;
+    transform: none;
+    transition: opacity 0.6s ease;
+    transition-delay: 0s;
+  }
+  .chapter__media-inner { will-change: auto; }
+  .story-trail { display: none; }
+}

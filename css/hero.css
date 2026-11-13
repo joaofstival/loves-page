@@ -1,0 +1,229 @@
+/* ==========================================================================
+   hero.css — abertura em tela cheia
+   PERSONALIZAR: cores do véu/gradiente em .hero__veil e .hero__gradient;
+   ritmo da entrada em --hero-stagger / --hero-delay.
+   ========================================================================== */
+
+.hero {
+  --hero-stagger: 110ms;  /* intervalo entre palavras */
+  --hero-delay: 250ms;    /* atraso inicial */
+
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  text-align: center;
+  background: var(--c-bg);
+}
+
+/* ---------------- Fundo ---------------- */
+.hero__media {
+  position: absolute;
+  inset: -6% 0;            /* margem para o parallax não revelar bordas */
+  z-index: 0;
+  will-change: transform;
+}
+
+.hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  display: block;
+}
+
+/* Véu luminoso: deixa o vídeo suave, quase etéreo. */
+.hero__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 45%, rgba(255, 192, 203, 0.38), rgba(255, 192, 203, 0) 70%),
+    linear-gradient(to bottom, rgba(255, 250, 248, 0) 55%, var(--c-bg) 96%),
+    var(--c-veil);
+}
+
+/* Fallback sem vídeo: gradiente animado (só transform → barato). */
+.hero__gradient {
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 30% 35%, rgba(255, 192, 203, 0.75), transparent 45%),
+    radial-gradient(circle at 70% 60%, rgba(247, 168, 184, 0.6), transparent 50%),
+    radial-gradient(circle at 50% 85%, rgba(220, 20, 60, 0.14), transparent 45%),
+    var(--c-bg);
+  animation: hero-gradient 18s var(--ease-in-out, ease-in-out) infinite alternate;
+  will-change: transform;
+}
+
+@keyframes hero-gradient {
+  0%   { transform: translate3d(-4%, -2%, 0) rotate(0deg) scale(1); }
+  50%  { transform: translate3d(3%, 3%, 0) rotate(8deg) scale(1.08); }
+  100% { transform: translate3d(-2%, 4%, 0) rotate(-6deg) scale(1.02); }
+}
+
+/* Com vídeo, o gradiente fica escondido sob ele; sem animação desnecessária. */
+.hero:not(.hero--no-video) .hero__gradient { animation: none; }
+
+/* ---------------- Conteúdo ---------------- */
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0 var(--gutter, 20px);
+  will-change: transform, opacity;
+}
+
+.hero__content {
+  max-width: var(--maxw, 1100px);
+  margin: 0 auto;
+}
+
+.hero__names {
+  margin: 0 0 clamp(14px, 3vh, 28px);
+  font-family: var(--f-body);
+  font-size: var(--fs-small, 0.8rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--c-ink-soft);
+}
+
+.hero__amp {
+  display: inline-block;
+  margin: 0 0.6em;
+  font-family: var(--f-script);
+  font-size: 1.9em;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--c-red);
+  vertical-align: -0.28em;
+}
+
+.hero__title {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: var(--fs-hero, clamp(2.8rem, 9vw, 7rem));
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  color: var(--c-ink);
+  text-wrap: balance;
+}
+
+.hero__subtitle {
+  margin: clamp(10px, 2.4vh, 22px) 0 0;
+  font-family: var(--f-script);
+  font-size: clamp(1.8rem, 5.5vw, 3.2rem);
+  line-height: 1.1;
+  color: var(--c-red);
+  text-shadow: 0 0 24px var(--c-glow, rgba(255, 192, 203, 0.6));
+}
+
+/* ---------------- Animação de entrada ---------------- */
+.hero__word,
+.hero__fade {
+  display: inline-block;
+  opacity: 0;
+}
+.hero__fade { display: block; }
+
+.hero.is-ready .hero__word {
+  animation: hero-word 1.4s var(--ease-out, cubic-bezier(.2,.7,.2,1)) both;
+  animation-delay: calc(var(--hero-delay) + var(--i, 0) * var(--hero-stagger));
+}
+.hero.is-ready .hero__fade {
+  animation: hero-fade 1.6s var(--ease-out, cubic-bezier(.2,.7,.2,1)) both;
+  animation-delay: calc(var(--hero-delay) + var(--d, 0) * var(--hero-stagger));
+}
+
+@keyframes hero-word {
+  from { opacity: 0; filter: blur(14px); transform: translate3d(0, 0.35em, 0) scale(1.04); }
+  to   { opacity: 1; filter: blur(0);    transform: none; }
+}
+@keyframes hero-fade {
+  from { opacity: 0; filter: blur(8px); transform: translate3d(0, 14px, 0); }
+  to   { opacity: 1; filter: blur(0);   transform: none; }
+}
+
+/* ---------------- Dica de scroll ---------------- */
+.hero__hint {
+  position: absolute;
+  left: 50%;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 1;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.hero__hint-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.hero__hint-text {
+  font-family: var(--f-body);
+  font-size: var(--fs-small, 0.75rem);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--c-ink-soft);
+}
+.hero__hint-line {
+  position: relative;
+  width: 1px;
+  height: 56px;
+  background: linear-gradient(to bottom, rgba(220, 20, 60, 0.45), rgba(220, 20, 60, 0));
+  overflow: visible;
+}
+/* Pequeno coração que desce pela linha. */
+.hero__hint-heart {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  background: var(--c-red);
+  transform: rotate(45deg);
+  animation: hero-hint 2.4s var(--ease-in-out, ease-in-out) infinite;
+}
+.hero__hint-heart::before,
+.hero__hint-heart::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: inherit;
+}
+.hero__hint-heart::before { left: -4.5px; top: 0; }
+.hero__hint-heart::after  { left: 0; top: -4.5px; }
+
+@keyframes hero-hint {
+  0%   { opacity: 0; transform: translate3d(0, 0, 0) rotate(45deg) scale(0.7); }
+  20%  { opacity: 1; }
+  70%  { opacity: 1; transform: translate3d(0, 46px, 0) rotate(45deg) scale(1); }
+  100% { opacity: 0; transform: translate3d(0, 56px, 0) rotate(45deg) scale(0.8); }
+}
+
+/* ---------------- Desktop ---------------- */
+@media (min-width: 900px) {
+  .hero__hint { bottom: 32px; }
+  .hero__hint-line { height: 72px; }
+}
+
+/* ---------------- Movimento reduzido ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero__gradient,
+  .hero__hint-heart { animation: none; }
+  .hero.is-ready .hero__word,
+  .hero.is-ready .hero__fade {
+    animation: hero-fade-simple 0.6s ease both;
+    animation-delay: 0s;
+  }
+  @keyframes hero-fade-simple { from { opacity: 0; } to { opacity: 1; } }
+}

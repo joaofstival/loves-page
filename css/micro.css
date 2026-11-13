@@ -1,0 +1,195 @@
+/* ==================================================================
+   micro.css — confetti layer, floating phrases ("mensagens nas
+   entrelinhas"), button heart-pop, and a focus-ring refinement.
+   Scoped to these features only.
+   ================================================================== */
+
+/* ---------- Overlay layers --------------------------------------- */
+
+#confetti-canvas,
+#floating-layer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#confetti-canvas {
+  z-index: var(--z-confetti, 50);
+  display: block;
+}
+
+#floating-layer {
+  z-index: var(--z-floating, 20);
+  overflow: hidden;
+  contain: strict; /* phrases never affect page layout or paint outside */
+}
+
+/* ---------- Floating phrase -------------------------------------- */
+
+.floating-phrase {
+  --life: 7s;
+  --drift: -40px;
+  --tilt: 0deg;
+  --o: 0.62;
+
+  position: absolute;
+  max-width: min(17rem, 42vw);
+  font-family: var(--f-script, cursive);
+  font-size: clamp(1.15rem, 1rem + 0.7vw, 1.65rem);
+  line-height: 1.2;
+  color: var(--c-red, #dc143c);
+  text-wrap: balance;
+  white-space: normal;
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  animation: phrase-life var(--life) var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+}
+
+.floating-phrase.is-soft {
+  color: var(--c-red-deep, #a50e2d);
+  --o: 0.5;
+}
+
+/* Tiny heart glyph leading the phrase. */
+.floating-phrase::before {
+  content: "\2665"; /* ♥ */
+  display: inline-block;
+  margin-right: 0.35em;
+  font-family: var(--f-body, system-ui, sans-serif);
+  font-size: 0.55em;
+  vertical-align: 0.35em;
+  color: var(--c-pink-2, #f7a8b8);
+}
+
+@keyframes phrase-life {
+  0% {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translate3d(0, 14px, 0) rotate(var(--tilt));
+  }
+  20% {
+    opacity: var(--o);
+    filter: blur(0);
+  }
+  72% {
+    opacity: var(--o);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translate3d(0, var(--drift), 0) rotate(var(--tilt));
+  }
+}
+
+/* Mobile: smaller, quieter. */
+@media (max-width: 720px) {
+  .floating-phrase {
+    font-size: 1.05rem;
+    max-width: 70vw;
+    --o: 0.42;
+  }
+  .floating-phrase.is-soft { --o: 0.36; }
+}
+
+/* Reduced motion: fade only, no blur, no drift. */
+.floating-phrase.is-static {
+  will-change: opacity;
+  animation-name: phrase-fade;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes phrase-fade {
+  0%, 100% { opacity: 0; }
+  20%, 75% { opacity: var(--o); }
+}
+
+/* ---------- Button heart pop ------------------------------------- */
+
+/* Short tactile bounce. Uses the independent `scale` property so it
+   composes with any `transform` the button's own styles apply. */
+.btn.is-popping {
+  animation: btn-pop 420ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+@keyframes btn-pop {
+  0%   { scale: 1; }
+  30%  { scale: 0.94; }
+  65%  { scale: 1.04; }
+  100% { scale: 1; }
+}
+
+/* Heart + ring spawned at the click point (appended to <body>). */
+.heart-pop {
+  position: fixed;
+  z-index: var(--z-confetti, 50);
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Expanding ring */
+.heart-pop::before {
+  content: "";
+  position: absolute;
+  left: -28px;
+  top: -28px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--c-red, #dc143c);
+  opacity: 0;
+  animation: pop-ring 600ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+}
+
+/* Rising heart */
+.heart-pop::after {
+  content: "\2665";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--f-body, system-ui, sans-serif);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--c-red, #dc143c);
+  translate: -50% -50%;
+  opacity: 0;
+  animation: pop-heart 700ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
+}
+
+@keyframes pop-ring {
+  0%   { opacity: 0.55; transform: scale(0.2); }
+  100% { opacity: 0;    transform: scale(1.6); }
+}
+
+@keyframes pop-heart {
+  0%   { opacity: 0;   transform: translateY(0) scale(0.3); }
+  25%  { opacity: 1;   transform: translateY(-6px) scale(1.15); }
+  100% { opacity: 0;   transform: translateY(-34px) scale(0.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn.is-popping { animation: none; }
+  .heart-pop::before { animation-duration: 1ms; }
+  .heart-pop::after {
+    animation: pop-heart-rm 500ms ease-out forwards;
+  }
+  @keyframes pop-heart-rm {
+    0%, 100% { opacity: 0; }
+    40%      { opacity: 1; }
+  }
+}
+
+/* ---------- Focus ring refinement -------------------------------- */
+
+/* Zero-specificity via :where() so any component style can override. */
+:where(a, button, .btn, [tabindex], input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--c-red, #dc143c);
+  outline-offset: 3px;
+}
+
+:where(a, button, .btn, [tabindex], input, textarea, select, summary):focus:not(:focus-visible) {
+  outline: none;
+}
